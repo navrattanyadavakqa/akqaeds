@@ -143,6 +143,36 @@
           }
         },
         {
+          "title": "Product List",
+          "id": "product-list",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block",
+                "template": {
+                  "name": "Product List",
+                  "filter": "product-list"
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Product List Item",
+          "id": "product-list-item",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Product List Item",
+                  "model": "product-list-item"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Hero",
           "id": "hero",
           "plugins": {

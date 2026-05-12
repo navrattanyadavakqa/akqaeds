@@ -15,7 +15,14 @@
       "hero",
       "cards",
       "columns",
-      "fragment"
+      "fragment",
+      "product-list"
+    ]
+  },
+  {
+    "id": "product-list",
+    "components": [
+      "product-list-item"
     ]
   },
   {

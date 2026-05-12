@@ -190,6 +190,23 @@
     ]
   },
   {
+    "id": "product-list-item",
+    "fields": [
+      {
+        "component": "text",
+        "name": "name",
+        "label": "Product Name",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "price",
+        "label": "Price",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
     "id": "hero",
     "fields": [
       {

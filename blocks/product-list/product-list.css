@@ -1,0 +1,22 @@
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+.product-list .product-list-card {
+  border: 1px solid #ccc;
+  padding: 12px;
+  background-color: var(--background-color);
+}
+
+.product-list .product-list-card h3 {
+  margin: 0 0 8px;
+  font-size: var(--heading-font-size-m);
+}
+
+.product-list .product-list-card p {
+  margin: 0;
+}
