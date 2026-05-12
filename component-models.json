@@ -216,6 +216,17 @@
     ]
   },
   {
+    "id": "product-detail",
+    "fields": [
+      {
+        "component": "text",
+        "name": "productId",
+        "label": "Product ID",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
     "id": "product",
     "fields": [
       {
