@@ -16,13 +16,7 @@
       "cards",
       "columns",
       "fragment",
-      "product-list"
-    ]
-  },
-  {
-    "id": "product-list",
-    "components": [
-      "product-list-item"
+      "products"
     ]
   },
   {
@@ -44,6 +38,12 @@
       "image",
       "button",
       "title"
+    ]
+  },
+  {
+    "id": "products",
+    "components": [
+      "product"
     ]
   }
 ]
