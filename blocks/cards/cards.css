@@ -10,13 +10,18 @@
 .cards > ul > li {
   border: 1px solid #dadada;
   background-color: var(--background-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .cards > ul > li > .cards-card-link {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   text-decoration: none;
   color: inherit;
-  height: 100%;
 }
 
 .cards > ul > li > .cards-card-link:hover {
@@ -30,6 +35,10 @@
 
 .cards .cards-card-body {
   margin: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .cards .cards-card-image {
