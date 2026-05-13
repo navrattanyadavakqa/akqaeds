@@ -14,14 +14,14 @@ function renderFeatureMedia(src, alt) {
   } catch {
     // fall through
   }
-  return createOptimizedPicture(src, alt || '', false, [{ width: '400' }]);
+  return createOptimizedPicture(src, alt || '', false, [{ width: '220' }]);
 }
 
 function optimizePictureInPlace(mediaEl) {
   mediaEl.querySelectorAll('picture > img').forEach((img) => {
     const pic = img.closest('picture');
     if (!pic) return;
-    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '400' }]);
+    const optimizedPic = createOptimizedPicture(img.src, img.alt, false, [{ width: '220' }]);
     moveInstrumentation(img, optimizedPic.querySelector('img'));
     pic.replaceWith(optimizedPic);
   });
@@ -59,7 +59,7 @@ function isTextOnlyRow(row) {
 }
 
 /**
- * When authors use two block rows (image row + text row) for one feature, merge into one logical row.
+ * Merge adjacent image / text rows into one logical feature row.
  * @param {Element[]} rows
  * @returns {{ row: Element, instrumentFrom: Element }[]}
  */
@@ -75,18 +75,16 @@ function expandFeatureRows(rows) {
       [...b.children].forEach((c) => merged.append(c.cloneNode(true)));
       out.push({ row: merged, instrumentFrom: a });
       i += 2;
-      continue;
-    }
-    if (b && isTextOnlyRow(a) && isMediaOnlyRow(b)) {
+    } else if (b && isTextOnlyRow(a) && isMediaOnlyRow(b)) {
       const merged = document.createElement('div');
       [...b.children].forEach((c) => merged.append(c.cloneNode(true)));
       [...a.children].forEach((c) => merged.append(c.cloneNode(true)));
       out.push({ row: merged, instrumentFrom: a });
       i += 2;
-      continue;
+    } else {
+      out.push({ row: a, instrumentFrom: a });
+      i += 1;
     }
-    out.push({ row: a, instrumentFrom: a });
-    i += 1;
   }
   return out;
 }
@@ -109,12 +107,13 @@ function buildFeatureItem(row, instrumentFrom = row) {
     mediaCell = cells.find((c) => c.querySelector('picture, img')) ?? cells[0];
     bodyCells = cells.filter((c) => c !== mediaCell);
   } else if (cells.length === 2) {
-    if (cells[0].querySelector('picture, img')) {
-      mediaCell = cells[0];
-      bodyCells = [cells[1]];
-    } else if (cells[1].querySelector('picture, img')) {
-      mediaCell = cells[1];
-      bodyCells = [cells[0]];
+    const [c0, c1] = cells;
+    if (c0.querySelector('picture, img')) {
+      mediaCell = c0;
+      bodyCells = [c1];
+    } else if (c1.querySelector('picture, img')) {
+      mediaCell = c1;
+      bodyCells = [c0];
     } else {
       bodyCells = cells;
     }
@@ -191,7 +190,10 @@ function buildFeatureItem(row, instrumentFrom = row) {
     }
   }
 
-  item.append(media, body);
+  const layoutRow = document.createElement('div');
+  layoutRow.className = 'tyre-feature-item-row';
+  layoutRow.append(media, body);
+  item.append(layoutRow);
   optimizePictureInPlace(media);
   return item;
 }
