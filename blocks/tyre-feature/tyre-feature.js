@@ -35,6 +35,27 @@ function rowHasMedia(row) {
   return Boolean(row.querySelector('picture, img'));
 }
 
+/** AEM UE marks each child feature with this model id. */
+function isTyreFeatureItem(el) {
+  return el?.getAttribute?.('data-aue-model') === 'tyre-feature-item';
+}
+
+/**
+ * Block rows: direct children, or unwrap a single wrapper that contains item components.
+ * @param {Element} block
+ * @returns {Element[]}
+ */
+function getBlockRows(block) {
+  const direct = [...block.children];
+  if (direct.length === 1) {
+    const wrapper = direct[0];
+    if (wrapper.querySelector(':scope > [data-aue-model="tyre-feature-item"]')) {
+      return [...wrapper.children];
+    }
+  }
+  return direct;
+}
+
 /**
  * One table row whose only cell is basically an image (no headings / body copy).
  * @param {Element} row
@@ -203,27 +224,50 @@ function buildFeatureItem(row, instrumentFrom = row) {
 }
 
 export default function decorate(block) {
-  const rowEls = [...block.children];
+  const rowEls = getBlockRows(block);
+  /** Prefer explicit UE item components so every feature is rendered (not merged as one row). */
+  let explicitItems = rowEls.filter(isTyreFeatureItem);
+  if (explicitItems.length === 0) {
+    explicitItems = [...block.querySelectorAll('[data-aue-model="tyre-feature-item"]')];
+  }
+
   const root = document.createElement('div');
   root.className = 'tyre-feature-inner';
   block.innerHTML = '';
 
-  let start = 0;
-  if (rowEls[0] && !rowHasMedia(rowEls[0])) {
-    const titleText = rowEls[0].querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim()
-      || rowEls[0].textContent.trim();
+  let titleRow = null;
+  /** @type {{ row: Element, instrumentFrom: Element }[]} */
+  let featureSource;
+
+  if (explicitItems.length > 0) {
+    titleRow = rowEls.find(
+      (el) => !isTyreFeatureItem(el)
+        && !el.querySelector('[data-aue-model="tyre-feature-item"]')
+        && el.textContent?.trim(),
+    ) ?? null;
+    featureSource = explicitItems.map((row) => ({ row, instrumentFrom: row }));
+  } else {
+    const [firstRow] = rowEls;
+    let start = 0;
+    if (firstRow && !rowHasMedia(firstRow)) {
+      titleRow = firstRow;
+      start = 1;
+    }
+    featureSource = expandFeatureRows(rowEls.slice(start));
+  }
+
+  if (titleRow?.textContent?.trim()) {
+    const titleText = titleRow.querySelector('h1, h2, h3, h4, h5, h6')?.textContent?.trim()
+      || titleRow.textContent.trim();
     if (titleText) {
       const h = document.createElement('h2');
       h.className = 'tyre-feature-title';
       h.textContent = titleText;
       root.append(h);
     }
-    start = 1;
   }
 
-  const featureRows = rowEls.slice(start);
-  const expanded = expandFeatureRows(featureRows);
-  expanded.forEach(({ row, instrumentFrom }) => {
+  featureSource.forEach(({ row, instrumentFrom }) => {
     const el = buildFeatureItem(row, instrumentFrom);
     if (el) root.append(el);
   });
