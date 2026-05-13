@@ -1,0 +1,34 @@
+{
+  "definitions": [
+    {
+      "title": "Product list",
+      "id": "product-list",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "Product list",
+              "model": "product-list"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "product-list",
+      "fields": [
+        {
+          "component": "text",
+          "name": "listApiUrl",
+          "label": "Product list API URL",
+          "valueType": "string",
+          "description": "Optional override URL. Default is getProducts with no query — JSON `{ \"success\": true, \"data\": [ { \"id\", \"title\", \"description\", \"image\", \"price\" }, ... ] }`. Append `?id=` for a single product only."
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

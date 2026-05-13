@@ -1,0 +1,13 @@
+.product-list .product-list-status {
+  margin: 0;
+  padding: 12px 0;
+  font-size: var(--body-font-size-s, 1rem);
+}
+
+.product-list .product-list-error {
+  color: var(--error-color, #b00020);
+}
+
+.product-list .product-list-empty {
+  color: var(--text-color-secondary, #555);
+}

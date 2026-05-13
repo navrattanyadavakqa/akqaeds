@@ -21,15 +21,23 @@
   margin-bottom: 0;
 }
 
-:is(.tyre-feature, .tyre-features) .tyre-feature-item--linked {
-  cursor: pointer;
+/* Visible CTA to authored page (picker column is removed in JS) */
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-see-more {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: var(--body-font-size-s, 1rem);
+  color: var(--link-color);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-:is(.tyre-feature, .tyre-features) .tyre-feature-item--linked:hover .tyre-feature-item-row {
-  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-see-more:hover {
+  color: var(--link-hover-color);
 }
 
-:is(.tyre-feature, .tyre-features) .tyre-feature-item--linked:focus-visible {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-see-more:focus-visible {
   outline: 2px solid var(--link-color);
   outline-offset: 2px;
 }

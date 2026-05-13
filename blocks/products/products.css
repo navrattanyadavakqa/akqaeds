@@ -1,4 +1,4 @@
-.products {
+:is(.products, .product-list) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 24px;
@@ -6,7 +6,7 @@
   padding: 0;
 }
 
-.products .products-card {
+:is(.products, .product-list) .products-card {
   border: 1px solid #ccc;
   background-color: var(--background-color);
   display: flex;
@@ -14,19 +14,19 @@
   overflow: hidden;
 }
 
-.products .products-card-image {
+:is(.products, .product-list) .products-card-image {
   line-height: 0;
   aspect-ratio: 4 / 3;
   background: var(--light-color, #f5f5f5);
 }
 
-.products .products-card-image img {
+:is(.products, .product-list) .products-card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.products .products-card-body {
+:is(.products, .product-list) .products-card-body {
   padding: 12px 16px 16px;
   display: flex;
   flex-direction: column;
@@ -34,27 +34,27 @@
   flex: 1;
 }
 
-.products .products-card-body h3 {
+:is(.products, .product-list) .products-card-body h3 {
   margin: 0;
   font-size: var(--heading-font-size-m);
 }
 
-.products .products-card-description {
+:is(.products, .product-list) .products-card-description {
   margin: 0;
   font-size: var(--body-font-size-s, 0.95rem);
   color: var(--text-color, inherit);
   line-height: 1.45;
 }
 
-.products .products-card-description p {
+:is(.products, .product-list) .products-card-description p {
   margin: 0 0 0.5em;
 }
 
-.products .products-card-description p:last-child {
+:is(.products, .product-list) .products-card-description p:last-child {
   margin-bottom: 0;
 }
 
-.products .products-card-price {
+:is(.products, .product-list) .products-card-price {
   margin: 0;
   margin-top: auto;
   font-weight: 600;

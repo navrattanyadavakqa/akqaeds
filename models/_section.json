@@ -53,6 +53,7 @@
         "fragment",
         "products",
         "product-detail",
+        "product-list",
         "tyre-feature"
       ]
     }

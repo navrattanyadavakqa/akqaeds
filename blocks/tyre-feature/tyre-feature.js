@@ -176,6 +176,27 @@ function findPageLinkCell(cells) {
 }
 
 /**
+ * Fallback: find picker link anywhere in the feature row (UE may not use table cells).
+ * @param {Element} row
+ * @returns {{ href: string, column: Element | null, label?: string } | null}
+ */
+function extractLinkFromRow(row) {
+  const candidates = row.querySelectorAll(
+    '[data-aue-label="Page link"] a[href], [data-aue-prop="link"] a[href], a[href][data-aue-prop="link"]',
+  );
+  for (let i = 0; i < candidates.length; i += 1) {
+    const a = candidates[i];
+    const href = a.getAttribute('href');
+    if (href && href !== '#' && !href.toLowerCase().startsWith(UNSAFE_LINK_PREFIX)) {
+      const directDivs = [...row.children].filter((el) => el.tagName === 'DIV');
+      const column = directDivs.find((d) => d.contains(a)) ?? null;
+      return { href, column, label: undefined };
+    }
+  }
+  return null;
+}
+
+/**
  * @param {Element} row
  * @param {Element} instrumentFrom
  * @returns {HTMLElement}
@@ -190,8 +211,8 @@ function buildFeatureItem(row, instrumentFrom = row) {
   moveInstrumentation(instrumentFrom, item);
 
   const cellsAll = [...row.children].filter((el) => el.tagName === 'DIV');
-  const linkInfo = findPageLinkCell(cellsAll);
-  const cells = linkInfo ? cellsAll.filter((c) => c !== linkInfo.column) : cellsAll;
+  const linkInfo = findPageLinkCell(cellsAll) ?? extractLinkFromRow(row);
+  const cells = linkInfo?.column ? cellsAll.filter((c) => c !== linkInfo.column) : cellsAll;
   let mediaCell = null;
   let bodyCells = [];
 
@@ -282,36 +303,19 @@ function buildFeatureItem(row, instrumentFrom = row) {
     }
   }
 
+  if (linkInfo?.href) {
+    const seeMore = document.createElement('a');
+    seeMore.className = 'tyre-feature-item-see-more';
+    seeMore.href = linkInfo.href;
+    seeMore.textContent = 'See more';
+    body.append(seeMore);
+  }
+
   const layoutRow = document.createElement('div');
   layoutRow.className = 'tyre-feature-item-row';
   layoutRow.append(media, body);
   optimizePictureInPlace(media);
 
-  if (linkInfo) {
-    item.classList.add('tyre-feature-item--linked');
-    const aria = linkInfo.label
-      || body.querySelector('.tyre-feature-item-heading')?.textContent?.trim()
-      || 'Open linked page';
-    item.setAttribute('role', 'link');
-    item.tabIndex = 0;
-    item.setAttribute('aria-label', aria);
-    const go = () => {
-      window.location.assign(linkInfo.href);
-    };
-    item.addEventListener('click', (evt) => {
-      if (evt.target.closest('.tyre-feature-item-desc a[href]')) {
-        return;
-      }
-      evt.preventDefault();
-      go();
-    }, true);
-    item.addEventListener('keydown', (evt) => {
-      if (evt.key === 'Enter' || evt.key === ' ') {
-        evt.preventDefault();
-        go();
-      }
-    });
-  }
   item.append(layoutRow);
   return item;
 }

@@ -232,6 +232,18 @@
     ]
   },
   {
+    "id": "product-list",
+    "fields": [
+      {
+        "component": "text",
+        "name": "listApiUrl",
+        "label": "Product list API URL",
+        "valueType": "string",
+        "description": "Optional override URL. Default is getProducts with no query — JSON `{ \"success\": true, \"data\": [ { \"id\", \"title\", \"description\", \"image\", \"price\" }, ... ] }`. Append `?id=` for a single product only."
+      }
+    ]
+  },
+  {
     "id": "product",
     "fields": [
       {
