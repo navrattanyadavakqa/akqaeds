@@ -73,26 +73,53 @@ function productsArrayFromResponse(json) {
 }
 
 /**
+ * @param {unknown} pathOrUrl
+ * @returns {string}
+ */
+function toProductPageHref(pathOrUrl) {
+  const raw = String(pathOrUrl ?? '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const path = raw.startsWith('/') ? raw : `/${raw}`;
+  try {
+    return new URL(path, window.location.origin).href;
+  } catch {
+    return '';
+  }
+}
+
+/**
  * @param {Record<string, unknown>} raw
- * @returns {{ title: string, description: string, image: string, price: unknown }}
+ * @returns {{ title: string, description: string, image: string, price: unknown, href: string }}
  */
 function normalizeProduct(raw) {
   const title = String(raw.title ?? raw.name ?? '').trim();
   const description = String(raw.description ?? raw.summary ?? '').trim();
   const image = String(raw.image ?? raw.imageUrl ?? raw.thumbnail ?? '').trim();
   const price = raw.price ?? raw.amount;
+  const urlRaw = raw.url ?? raw.path ?? raw.href ?? raw.link ?? '';
+  const href = toProductPageHref(
+    typeof urlRaw === 'string' ? urlRaw : String(urlRaw ?? ''),
+  );
   return {
-    title, description, image, price,
+    title,
+    description,
+    image,
+    price,
+    href,
   };
 }
 
 /**
- * @param {{ title: string, description: string, image: string, price: unknown }} p
+ * @param {{ title: string, description: string, image: string, price: unknown, href: string }} p
  * @returns {HTMLElement}
  */
 function buildProductCard(p) {
-  const card = document.createElement('div');
+  const card = document.createElement(p.href ? 'a' : 'div');
   card.className = 'products-card';
+  if (p.href) {
+    card.href = p.href;
+  }
 
   const mediaWrap = document.createElement('div');
   mediaWrap.className = 'products-card-image';
