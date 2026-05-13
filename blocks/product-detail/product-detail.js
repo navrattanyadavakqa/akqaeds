@@ -139,7 +139,8 @@ export default async function decorate(block) {
   body.className = 'product-detail-card-body';
 
   if (title) {
-    const h = document.createElement('h3');
+    const h = document.createElement('h2');
+    h.className = 'product-detail-title';
     h.textContent = title;
     body.append(h);
   }

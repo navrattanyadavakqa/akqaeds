@@ -17,7 +17,8 @@
       "columns",
       "fragment",
       "products",
-      "product-detail"
+      "product-detail",
+      "tyre-feature"
     ]
   },
   {
@@ -45,6 +46,12 @@
     "id": "products",
     "components": [
       "product"
+    ]
+  },
+  {
+    "id": "tyre-feature",
+    "components": [
+      "tyre-feature-item"
     ]
   }
 ]

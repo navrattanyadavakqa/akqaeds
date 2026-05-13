@@ -1,0 +1,71 @@
+.tyre-feature .tyre-feature-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.tyre-feature .tyre-feature-title {
+  margin: 0 0 32px;
+  font-size: var(--heading-font-size-l, 1.75rem);
+  text-align: center;
+}
+
+.tyre-feature .tyre-feature-item {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr);
+  gap: 24px 32px;
+  align-items: start;
+  margin-bottom: 40px;
+}
+
+.tyre-feature .tyre-feature-item:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 699px) {
+  .tyre-feature .tyre-feature-item {
+    grid-template-columns: 1fr;
+  }
+
+  .tyre-feature .tyre-feature-item-media {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+}
+
+.tyre-feature .tyre-feature-item-media {
+  line-height: 0;
+  background: var(--light-color, #f5f5f5);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tyre-feature .tyre-feature-item-media img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.tyre-feature .tyre-feature-item-body {
+  min-width: 0;
+}
+
+.tyre-feature .tyre-feature-item-heading {
+  margin: 0 0 12px;
+  font-size: var(--heading-font-size-m, 1.25rem);
+  line-height: 1.25;
+}
+
+.tyre-feature .tyre-feature-item-desc {
+  font-size: var(--body-font-size-m, 1rem);
+  line-height: 1.5;
+  color: var(--text-color, inherit);
+}
+
+.tyre-feature .tyre-feature-item-desc p {
+  margin: 0 0 0.75em;
+}
+
+.tyre-feature .tyre-feature-item-desc p:last-child {
+  margin-bottom: 0;
+}

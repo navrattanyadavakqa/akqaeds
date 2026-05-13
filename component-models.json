@@ -268,5 +268,41 @@
         "valueType": "string"
       }
     ]
+  },
+  {
+    "id": "tyre-feature",
+    "fields": [
+      {
+        "component": "text",
+        "name": "heading",
+        "label": "Section heading",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "tyre-feature-item",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "name": "heading",
+        "label": "Feature heading",
+        "valueType": "string"
+      },
+      {
+        "component": "richtext",
+        "name": "description",
+        "value": "",
+        "label": "Description",
+        "valueType": "string"
+      }
+    ]
   }
 ]
