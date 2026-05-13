@@ -110,6 +110,46 @@ function expandFeatureRows(rows) {
   return out;
 }
 
+const UNSAFE_LINK_PREFIX = `${'java'}${'script'}:`;
+
+/**
+ * AEM content-picker cell: single link, no image / body copy (hidden from output; used as href).
+ * @param {Element[]} cells
+ * @returns {{ href: string, column: Element, label?: string } | null}
+ */
+function findPageLinkCell(cells) {
+  for (const div of cells) {
+    if (div.querySelector('picture, img')) {
+      // skip media column
+    } else if (!div.querySelector('p, ul, ol, h1, h2, h3, h4, h5, h6')) {
+      const links = div.querySelectorAll('a[href]');
+      if (links.length === 1) {
+        const a = links[0];
+        const href = a.getAttribute('href');
+        if (href && href !== '#' && !href.toLowerCase().startsWith(UNSAFE_LINK_PREFIX)) {
+          return {
+            href,
+            column: div,
+            label: a.textContent.trim() || undefined,
+          };
+        }
+      }
+      if (div.children.length === 1 && div.firstElementChild?.tagName === 'A') {
+        const a = div.firstElementChild;
+        const href = a.getAttribute('href');
+        if (href && href !== '#' && !href.toLowerCase().startsWith(UNSAFE_LINK_PREFIX)) {
+          return {
+            href,
+            column: div,
+            label: a.textContent.trim() || undefined,
+          };
+        }
+      }
+    }
+  }
+  return null;
+}
+
 /**
  * @param {Element} row
  * @param {Element} instrumentFrom
@@ -124,7 +164,9 @@ function buildFeatureItem(row, instrumentFrom = row) {
   item.className = 'tyre-feature-item';
   moveInstrumentation(instrumentFrom, item);
 
-  const cells = [...row.children].filter((el) => el.tagName === 'DIV');
+  const cellsAll = [...row.children].filter((el) => el.tagName === 'DIV');
+  const linkInfo = findPageLinkCell(cellsAll);
+  const cells = linkInfo ? cellsAll.filter((c) => c !== linkInfo.column) : cellsAll;
   let mediaCell = null;
   let bodyCells = [];
 
@@ -218,8 +260,31 @@ function buildFeatureItem(row, instrumentFrom = row) {
   const layoutRow = document.createElement('div');
   layoutRow.className = 'tyre-feature-item-row';
   layoutRow.append(media, body);
-  item.append(layoutRow);
   optimizePictureInPlace(media);
+
+  if (linkInfo) {
+    item.classList.add('tyre-feature-item--linked');
+    const aria = linkInfo.label
+      || body.querySelector('.tyre-feature-item-heading')?.textContent?.trim()
+      || 'Open linked page';
+    item.setAttribute('role', 'link');
+    item.tabIndex = 0;
+    item.setAttribute('aria-label', aria);
+    const go = () => {
+      window.location.assign(linkInfo.href);
+    };
+    item.addEventListener('click', (evt) => {
+      if (evt.target.closest('a, button')) return;
+      go();
+    });
+    item.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter' || evt.key === ' ') {
+        evt.preventDefault();
+        go();
+      }
+    });
+  }
+  item.append(layoutRow);
   return item;
 }
 

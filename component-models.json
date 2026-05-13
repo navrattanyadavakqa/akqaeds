@@ -302,6 +302,11 @@
         "value": "",
         "label": "Description",
         "valueType": "string"
+      },
+      {
+        "component": "aem-content",
+        "name": "link",
+        "label": "Page link"
       }
     ]
   }

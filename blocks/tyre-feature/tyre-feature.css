@@ -21,6 +21,19 @@
   margin-bottom: 0;
 }
 
+:is(.tyre-feature, .tyre-features) .tyre-feature-item--linked {
+  cursor: pointer;
+}
+
+:is(.tyre-feature, .tyre-features) .tyre-feature-item--linked:hover .tyre-feature-item-row {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+}
+
+:is(.tyre-feature, .tyre-features) .tyre-feature-item--linked:focus-visible {
+  outline: 2px solid var(--link-color);
+  outline-offset: 2px;
+}
+
 /* Same layout pattern as product-detail: grid row, image left / text right from 768px */
 :is(.tyre-feature, .tyre-features) .tyre-feature-item-row {
   display: grid;
