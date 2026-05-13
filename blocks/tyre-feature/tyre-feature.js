@@ -36,13 +36,70 @@ function rowHasMedia(row) {
 }
 
 /**
+ * One table row whose only cell is basically an image (no headings / body copy).
  * @param {Element} row
+ * @returns {boolean}
+ */
+function isMediaOnlyRow(row) {
+  const cells = [...row.children].filter((el) => el.tagName === 'DIV');
+  if (cells.length !== 1) return false;
+  const cell = cells[0];
+  if (!cell.querySelector('picture, img')) return false;
+  return !cell.querySelector('h1, h2, h3, h4, h5, h6, p, ul, ol, li');
+}
+
+/**
+ * Row with copy but no image (e.g. second row when image is authored on its own row).
+ * @param {Element} row
+ * @returns {boolean}
+ */
+function isTextOnlyRow(row) {
+  if (rowHasMedia(row)) return false;
+  return Boolean(row.textContent.trim());
+}
+
+/**
+ * When authors use two block rows (image row + text row) for one feature, merge into one logical row.
+ * @param {Element[]} rows
+ * @returns {{ row: Element, instrumentFrom: Element }[]}
+ */
+function expandFeatureRows(rows) {
+  const out = [];
+  let i = 0;
+  while (i < rows.length) {
+    const a = rows[i];
+    const b = rows[i + 1];
+    if (b && isMediaOnlyRow(a) && isTextOnlyRow(b)) {
+      const merged = document.createElement('div');
+      [...a.children].forEach((c) => merged.append(c.cloneNode(true)));
+      [...b.children].forEach((c) => merged.append(c.cloneNode(true)));
+      out.push({ row: merged, instrumentFrom: a });
+      i += 2;
+      continue;
+    }
+    if (b && isTextOnlyRow(a) && isMediaOnlyRow(b)) {
+      const merged = document.createElement('div');
+      [...b.children].forEach((c) => merged.append(c.cloneNode(true)));
+      [...a.children].forEach((c) => merged.append(c.cloneNode(true)));
+      out.push({ row: merged, instrumentFrom: a });
+      i += 2;
+      continue;
+    }
+    out.push({ row: a, instrumentFrom: a });
+    i += 1;
+  }
+  return out;
+}
+
+/**
+ * @param {Element} row
+ * @param {Element} instrumentFrom
  * @returns {HTMLElement}
  */
-function buildFeatureItem(row) {
+function buildFeatureItem(row, instrumentFrom = row) {
   const item = document.createElement('div');
   item.className = 'tyre-feature-item';
-  moveInstrumentation(row, item);
+  moveInstrumentation(instrumentFrom, item);
 
   const cells = [...row.children].filter((el) => el.tagName === 'DIV');
   let mediaCell = null;
@@ -62,8 +119,23 @@ function buildFeatureItem(row) {
       bodyCells = cells;
     }
   } else if (cells.length === 1) {
-    if (cells[0].querySelector('picture, img')) mediaCell = cells[0];
-    else bodyCells = [cells[0]];
+    const cell = cells[0];
+    const hasImg = Boolean(cell.querySelector('picture, img'));
+    const hasCopy = Boolean(cell.querySelector('h1, h2, h3, h4, h5, h6, p, ul, ol'));
+    if (hasImg && hasCopy) {
+      const pic = cell.querySelector('picture');
+      const img = cell.querySelector('img');
+      mediaCell = document.createElement('div');
+      if (pic) mediaCell.append(pic.cloneNode(true));
+      else if (img) mediaCell.append(img.cloneNode(true));
+      const bodyClone = cell.cloneNode(true);
+      bodyClone.querySelectorAll('picture, img').forEach((n) => n.remove());
+      bodyCells = [bodyClone];
+    } else if (hasImg) {
+      mediaCell = cell;
+    } else {
+      bodyCells = [cell];
+    }
   }
 
   const media = document.createElement('div');
@@ -143,9 +215,11 @@ export default function decorate(block) {
     start = 1;
   }
 
-  for (let i = start; i < rowEls.length; i += 1) {
-    root.append(buildFeatureItem(rowEls[i]));
-  }
+  const featureRows = rowEls.slice(start);
+  const expanded = expandFeatureRows(featureRows);
+  expanded.forEach(({ row, instrumentFrom }) => {
+    root.append(buildFeatureItem(row, instrumentFrom));
+  });
 
   block.append(root);
 }
