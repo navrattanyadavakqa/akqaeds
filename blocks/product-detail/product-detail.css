@@ -73,6 +73,12 @@
   font-weight: 600;
 }
 
+.product-detail .product-detail-card-stock {
+  margin: 0;
+  font-size: var(--body-font-size-s, 0.95rem);
+  color: var(--text-color-secondary, #555);
+}
+
 .product-detail .product-detail-loading,
 .product-detail .product-detail-placeholder,
 .product-detail .product-detail-error {

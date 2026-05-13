@@ -3,6 +3,9 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 
 const PRODUCTS_API = 'https://257490-akqaeds-stage.adobeioruntime.net/api/v1/web/akqaeds/getProducts';
 
+/** Edge function: price + inventory by SKU (same value as product id from getProducts). */
+const PRICE_STOCK_API_ORIGIN = 'http://127.0.0.1:7676';
+
 /**
  * Reads authored product id from block markup (first number in text, or ?id= from link).
  * @param {Element} block
@@ -31,6 +34,80 @@ function formatPrice(value) {
     return `₹${n.toLocaleString('en-IN')}`;
   }
   return String(value);
+}
+
+/**
+ * @param {unknown} stock
+ * @returns {string}
+ */
+function formatStock(stock) {
+  if (stock == null || stock === '') return '';
+  if (typeof stock === 'boolean') return stock ? 'In stock' : 'Out of stock';
+  const n = Number(stock);
+  if (!Number.isNaN(n)) {
+    if (n <= 0) return 'Out of stock';
+    return `In stock (${n})`;
+  }
+  return String(stock);
+}
+
+/**
+ * Edge API shape: `{ productId, price, stock, status, timestamp }` (optional `data` wrapper).
+ * @param {unknown} json
+ * @returns {{ price: unknown, stock: unknown, status: string | null } | null}
+ */
+function parsePriceStockPayload(json) {
+  if (!json || typeof json !== 'object') return null;
+  const root = /** @type {Record<string, unknown>} */ (json);
+  const payload = root.data && typeof root.data === 'object'
+    ? /** @type {Record<string, unknown>} */ (root.data)
+    : root;
+  const statusRaw = payload.status;
+  const status = statusRaw != null && String(statusRaw).trim() !== ''
+    ? String(statusRaw).trim()
+    : null;
+  return {
+    price: payload.price ?? payload.salePrice ?? payload.amount ?? null,
+    stock: payload.stock ?? payload.quantity ?? payload.inventory ?? payload.inStock ?? null,
+    status,
+  };
+}
+
+/**
+ * @param {{ stock: unknown, status: string | null } | null | undefined} row
+ * @returns {string}
+ */
+function formatAvailability(row) {
+  if (!row) return '';
+  if (row.status) {
+    const n = Number(row.stock);
+    if (!Number.isNaN(n) && n > 0) {
+      return `${row.status} (${n})`;
+    }
+    return row.status;
+  }
+  return formatStock(row.stock ?? undefined);
+}
+
+/**
+ * @param {string} sku
+ * @returns {Promise<{ price: unknown, stock: unknown, status: string | null } | null>}
+ */
+async function fetchPriceStock(sku) {
+  const url = `${PRICE_STOCK_API_ORIGIN}/api/price-stock?sku=${encodeURIComponent(sku)}`;
+  let response;
+  try {
+    response = await fetch(url);
+  } catch {
+    return null;
+  }
+  if (!response.ok) return null;
+  try {
+    const json = await response.json();
+    return parsePriceStockPayload(json);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -78,10 +155,14 @@ export default async function decorate(block) {
   root.append(loading);
   block.append(root);
 
-  let response;
+  let productRes;
+  /** @type {{ price: unknown, stock: unknown, status: string | null } | null} */
+  let priceStock;
   try {
-    const url = `${PRODUCTS_API}?id=${encodeURIComponent(productId)}`;
-    response = await fetch(url);
+    [productRes, priceStock] = await Promise.all([
+      fetch(`${PRODUCTS_API}?id=${encodeURIComponent(productId)}`),
+      fetchPriceStock(productId),
+    ]);
   } catch {
     loading.remove();
     const err = document.createElement('p');
@@ -91,7 +172,7 @@ export default async function decorate(block) {
     return;
   }
 
-  if (!response.ok) {
+  if (!productRes.ok) {
     loading.remove();
     const err = document.createElement('p');
     err.className = 'product-detail-error';
@@ -102,7 +183,7 @@ export default async function decorate(block) {
 
   let json;
   try {
-    json = await response.json();
+    json = await productRes.json();
   } catch {
     loading.remove();
     const err = document.createElement('p');
@@ -112,9 +193,8 @@ export default async function decorate(block) {
     return;
   }
 
-  loading.remove();
-
   if (!json.success || !json.data) {
+    loading.remove();
     const err = document.createElement('p');
     err.className = 'product-detail-error';
     err.textContent = 'Product not found.';
@@ -122,9 +202,17 @@ export default async function decorate(block) {
     return;
   }
 
+  loading.remove();
+
   const {
-    title, description, image, price,
+    title, description, image, price: catalogPrice,
   } = json.data;
+
+  const displayPrice = (
+    priceStock?.price != null && String(priceStock.price).trim() !== ''
+  )
+    ? priceStock.price
+    : catalogPrice;
 
   root.innerHTML = '';
 
@@ -154,8 +242,16 @@ export default async function decorate(block) {
 
   const priceEl = document.createElement('p');
   priceEl.className = 'product-detail-card-price';
-  priceEl.textContent = formatPrice(price);
+  priceEl.textContent = formatPrice(displayPrice);
   body.append(priceEl);
+
+  const stockText = formatAvailability(priceStock);
+  if (stockText) {
+    const stockEl = document.createElement('p');
+    stockEl.className = 'product-detail-card-stock';
+    stockEl.textContent = stockText;
+    body.append(stockEl);
+  }
 
   if (media.firstChild) root.append(media);
   root.append(body);
