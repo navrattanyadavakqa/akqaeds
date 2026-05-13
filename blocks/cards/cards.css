@@ -12,6 +12,22 @@
   background-color: var(--background-color);
 }
 
+.cards > ul > li > .cards-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.cards > ul > li > .cards-card-link:hover {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+}
+
+.cards > ul > li > .cards-card-link:focus-visible {
+  outline: 2px solid var(--link-color);
+  outline-offset: 2px;
+}
+
 .cards .cards-card-body {
   margin: 16px;
 }
