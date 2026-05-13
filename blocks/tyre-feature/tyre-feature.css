@@ -1,28 +1,28 @@
-.tyre-feature .tyre-feature-inner {
+:is(.tyre-feature, .tyre-features) .tyre-feature-inner {
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
 }
 
-.tyre-feature .tyre-feature-title {
+:is(.tyre-feature, .tyre-features) .tyre-feature-title {
   margin: 0 0 32px;
   font-size: var(--heading-font-size-l, 1.75rem);
   text-align: center;
 }
 
 /* Outer spacing per feature */
-.tyre-feature .tyre-feature-item {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item {
   width: 100%;
   margin-bottom: 40px;
   box-sizing: border-box;
 }
 
-.tyre-feature .tyre-feature-item:last-child {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item:last-child {
   margin-bottom: 0;
 }
 
 /* Same layout pattern as product-detail: grid row, image left / text right from 768px */
-.tyre-feature .tyre-feature-item-row {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-row {
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px 32px;
@@ -33,21 +33,21 @@
 
 /* Match product-detail PDP idea; 600px so editor preview often gets two columns */
 @media (min-width: 600px) {
-  .tyre-feature .tyre-feature-item-row {
+  :is(.tyre-feature, .tyre-features) .tyre-feature-item-row {
     /* Narrow image column (small image), rest for copy */
     grid-template-columns: minmax(140px, 220px) minmax(0, 1fr);
   }
 
-  .tyre-feature .tyre-feature-item-media {
+  :is(.tyre-feature, .tyre-features) .tyre-feature-item-media {
     order: 0;
   }
 
-  .tyre-feature .tyre-feature-item-body {
+  :is(.tyre-feature, .tyre-features) .tyre-feature-item-body {
     order: 1;
   }
 }
 
-.tyre-feature .tyre-feature-item-media {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-media {
   line-height: 0;
   background: var(--light-color, #f5f5f5);
   border-radius: 4px;
@@ -56,8 +56,8 @@
   max-width: 100%;
 }
 
-.tyre-feature .tyre-feature-item-media picture,
-.tyre-feature .tyre-feature-item-media img {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-media picture,
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-media img {
   display: block;
   width: 100%;
   height: auto;
@@ -65,7 +65,7 @@
   object-fit: contain;
 }
 
-.tyre-feature .tyre-feature-item-body {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-body {
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -73,22 +73,22 @@
   min-width: 0;
 }
 
-.tyre-feature .tyre-feature-item-heading {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-heading {
   margin: 0 0 12px;
   font-size: var(--heading-font-size-m, 1.25rem);
   line-height: 1.25;
 }
 
-.tyre-feature .tyre-feature-item-desc {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-desc {
   font-size: var(--body-font-size-m, 1rem);
   line-height: 1.5;
   color: var(--text-color, inherit);
 }
 
-.tyre-feature .tyre-feature-item-desc p {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-desc p {
   margin: 0 0 0.75em;
 }
 
-.tyre-feature .tyre-feature-item-desc p:last-child {
+:is(.tyre-feature, .tyre-features) .tyre-feature-item-desc p:last-child {
   margin-bottom: 0;
 }

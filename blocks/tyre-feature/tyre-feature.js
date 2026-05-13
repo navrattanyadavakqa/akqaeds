@@ -95,6 +95,10 @@ function expandFeatureRows(rows) {
  * @returns {HTMLElement}
  */
 function buildFeatureItem(row, instrumentFrom = row) {
+  if (!row.querySelector('picture, img') && !row.textContent.trim()) {
+    return null;
+  }
+
   const item = document.createElement('div');
   item.className = 'tyre-feature-item';
   moveInstrumentation(instrumentFrom, item);
@@ -220,7 +224,8 @@ export default function decorate(block) {
   const featureRows = rowEls.slice(start);
   const expanded = expandFeatureRows(featureRows);
   expanded.forEach(({ row, instrumentFrom }) => {
-    root.append(buildFeatureItem(row, instrumentFrom));
+    const el = buildFeatureItem(row, instrumentFrom);
+    if (el) root.append(el);
   });
 
   block.append(root);
