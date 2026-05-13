@@ -113,25 +113,50 @@ function expandFeatureRows(rows) {
 const UNSAFE_LINK_PREFIX = `${'java'}${'script'}:`;
 
 /**
- * AEM content-picker cell: single link, no image / body copy (hidden from output; used as href).
+ * Finds the page-link column for a Tyre feature row (AEM UE + doc table).
  * @param {Element[]} cells
  * @returns {{ href: string, column: Element, label?: string } | null}
  */
 function findPageLinkCell(cells) {
   for (const div of cells) {
-    if (div.querySelector('picture, img')) {
-      // skip media column
-    } else if (!div.querySelector('p, ul, ol, h1, h2, h3, h4, h5, h6')) {
-      const links = div.querySelectorAll('a[href]');
-      if (links.length === 1) {
-        const a = links[0];
-        const href = a.getAttribute('href');
+    if (!div.querySelector('picture, img')) {
+      const bound = div.matches('[data-aue-prop="link"], [data-aue-prop="Link"]')
+        ? div
+        : div.querySelector('[data-aue-prop="link"], [data-aue-prop="Link"]');
+      if (bound) {
+        const a = bound.matches('a[href]') ? bound : bound.querySelector('a[href]');
+        const href = a?.getAttribute('href');
         if (href && href !== '#' && !href.toLowerCase().startsWith(UNSAFE_LINK_PREFIX)) {
           return {
             href,
             column: div,
             label: a.textContent.trim() || undefined,
           };
+        }
+      }
+    }
+  }
+
+  for (const div of cells) {
+    if (!div.querySelector('picture, img') && !div.querySelector('h1, h2, h3, h4, h5, h6, ul, ol')) {
+      const anchors = [...div.querySelectorAll('a[href]')].filter(
+        (a) => !a.closest('picture') && a.getAttribute('href') !== '#',
+      );
+      if (anchors.length === 1) {
+        const a = anchors[0];
+        const href = a.getAttribute('href');
+        if (href && !href.toLowerCase().startsWith(UNSAFE_LINK_PREFIX)) {
+          const onlyPWrapsLink = div.querySelectorAll('p').length === 1
+            && div.querySelector('p')?.querySelector('a[href]')
+            && !div.querySelector('p + p');
+          const noProse = !div.querySelector('p, ul, ol') || onlyPWrapsLink;
+          if (noProse) {
+            return {
+              href,
+              column: div,
+              label: a.textContent.trim() || undefined,
+            };
+          }
         }
       }
       if (div.children.length === 1 && div.firstElementChild?.tagName === 'A') {
@@ -274,9 +299,12 @@ function buildFeatureItem(row, instrumentFrom = row) {
       window.location.assign(linkInfo.href);
     };
     item.addEventListener('click', (evt) => {
-      if (evt.target.closest('a, button')) return;
+      if (evt.target.closest('.tyre-feature-item-desc a[href]')) {
+        return;
+      }
+      evt.preventDefault();
       go();
-    });
+    }, true);
     item.addEventListener('keydown', (evt) => {
       if (evt.key === 'Enter' || evt.key === ' ') {
         evt.preventDefault();
