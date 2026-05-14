@@ -59,3 +59,11 @@
   margin-top: auto;
   font-weight: 600;
 }
+
+:is(.products, .product-list) .products-card-stock {
+  margin: 0;
+  margin-top: 4px;
+  font-size: var(--body-font-size-s, 0.85rem);
+  font-weight: 400;
+  color: var(--text-color-secondary, #555);
+}

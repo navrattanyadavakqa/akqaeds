@@ -1,5 +1,9 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
+import {
+  fetchPriceStock,
+  formatAvailability,
+} from '../../scripts/product-price-stock.js';
 
 /** List: GET with no `id` returns `{ success, data: Product[] }`. */
 /** Detail: same URL with `?id=` returns one product in `data`. */
@@ -90,7 +94,7 @@ function toProductPageHref(pathOrUrl) {
 
 /**
  * @param {Record<string, unknown>} raw
- * @returns {{ title: string, description: string, image: string, price: unknown, href: string }}
+ * @returns {object} Normalized product fields including `sku` for price-stock API.
  */
 function normalizeProduct(raw) {
   const title = String(raw.title ?? raw.name ?? '').trim();
@@ -101,17 +105,42 @@ function normalizeProduct(raw) {
   const href = toProductPageHref(
     typeof urlRaw === 'string' ? urlRaw : String(urlRaw ?? ''),
   );
+  const idRaw = raw.id ?? raw.productId ?? raw.sku;
+  const sku = idRaw != null && idRaw !== '' ? String(idRaw).trim() : '';
   return {
     title,
     description,
     image,
     price,
     href,
+    sku,
   };
 }
 
 /**
- * @param {{ title: string, description: string, image: string, price: unknown, href: string }} p
+ * @param {object[]} items
+ * @returns {Promise<object[]>}
+ */
+async function enrichWithPriceStock(items) {
+  return Promise.all(
+    items.map(async (p) => {
+      if (!p.sku) {
+        return { ...p, stockText: '' };
+      }
+      const ps = await fetchPriceStock(p.sku);
+      const displayPrice = (
+        ps?.price != null && String(ps.price).trim() !== ''
+      )
+        ? ps.price
+        : p.price;
+      const stockText = formatAvailability(ps);
+      return { ...p, price: displayPrice, stockText };
+    }),
+  );
+}
+
+/**
+ * @param {object} p Product row with optional `stockText`.
  * @returns {HTMLElement}
  */
 function buildProductCard(p) {
@@ -149,6 +178,13 @@ function buildProductCard(p) {
   priceEl.className = 'products-card-price';
   priceEl.textContent = formatPrice(p.price);
   body.append(priceEl);
+
+  if (p.stockText) {
+    const stockEl = document.createElement('p');
+    stockEl.className = 'products-card-stock';
+    stockEl.textContent = p.stockText;
+    body.append(stockEl);
+  }
 
   if (mediaWrap.firstChild) card.append(mediaWrap);
   card.append(body);
@@ -199,13 +235,12 @@ export default async function decorate(block) {
     return;
   }
 
-  loading.remove();
-
   const items = productsArrayFromResponse(json)
     .filter((row) => row && typeof row === 'object')
     .map((row) => normalizeProduct(/** @type {Record<string, unknown>} */ (row)));
 
   if (items.length === 0) {
+    loading.remove();
     const empty = document.createElement('p');
     empty.className = 'product-list-status product-list-empty';
     empty.textContent = 'No products returned. Check that the list API responds with an array in `data`.';
@@ -213,7 +248,11 @@ export default async function decorate(block) {
     return;
   }
 
-  items.forEach((p) => {
+  loading.textContent = 'Loading prices…';
+  const enriched = await enrichWithPriceStock(items);
+  loading.remove();
+
+  enriched.forEach((p) => {
     block.append(buildProductCard(p));
   });
 
