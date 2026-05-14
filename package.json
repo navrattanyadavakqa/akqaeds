@@ -12,10 +12,7 @@
     "build:json:models": "merge-json-cli -i \"models/_component-models.json\" -o \"component-models.json\"",
     "build:json:definitions": "merge-json-cli -i \"models/_component-definition.json\" -o \"component-definition.json\"",
     "build:json:filters": "merge-json-cli -i \"models/_component-filters.json\" -o \"component-filters.json\"",
-    "prepare": "husky",
-    "build": "js-compute-runtime ./src/index.js ./bin/main.wasm",
-    "deploy": "fastly compute publish",
-    "test": "node --test"
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,0 @@
-kind: "EdgeFunctions"
-version: "1"
-data:
-  services:
-    - name: price-stock
