@@ -13,3 +13,4 @@ helix-importer-ui
 bin/
 *.wasm
 .aio
+.deepsec/
