@@ -1,0 +1,18 @@
+# This file describes a Fastly Compute package for AEM Edge Functions.
+manifest_version = 3
+name = "price-stock"
+language = "javascript"
+description = "AEM Edge Functions for price-stock service"
+authors = []
+cloned_from = "github.com"
+
+[scripts]
+build = "npm run build"
+post_init = "npm install"
+
+[local_server]
+
+# Minimal backend proxy mapping directly to your production EDS workspace
+[local_server.backends]
+[local_server.backends.origin]
+url = "https://main--akqaeds--navrattanyadavakqa.aem.live"

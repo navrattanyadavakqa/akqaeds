@@ -1,9 +1,15 @@
+# --- Keep your existing exceptions ---
 .hlx/*
 coverage/*
 logs/*
 node_modules/*
-
 helix-importer-ui
 .DS_Store
 *.bak
 .idea
+
+# --- APPEND THESE EDGE FUNCTION RULES ---
+.edge-functions-cache/
+bin/
+*.wasm
+.aio
