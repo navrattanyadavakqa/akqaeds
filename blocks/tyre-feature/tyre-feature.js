@@ -1,4 +1,9 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
+import {
+  collectProductSizeNodes,
+  isProductSizeElement,
+  mountProductSizes,
+} from '../../scripts/product-size-blocks.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 function renderFeatureMedia(src, alt) {
@@ -320,12 +325,15 @@ function buildFeatureItem(row, instrumentFrom = row) {
   return item;
 }
 
-export default function decorate(block) {
-  const rowEls = getBlockRows(block);
+export default async function decorate(block) {
+  const source = block.cloneNode(true);
+  const sizeSources = collectProductSizeNodes(source);
+  const rowEls = getBlockRows(block).filter((row) => !isProductSizeElement(row));
   /** Prefer explicit UE item components so every feature is rendered (not merged as one row). */
   let explicitItems = rowEls.filter(isTyreFeatureItem);
   if (explicitItems.length === 0) {
-    explicitItems = [...block.querySelectorAll('[data-aue-model="tyre-feature-item"]')];
+    explicitItems = [...block.querySelectorAll('[data-aue-model="tyre-feature-item"]')]
+      .filter((row) => !isProductSizeElement(row));
   }
 
   const root = document.createElement('div');
@@ -339,14 +347,16 @@ export default function decorate(block) {
   if (explicitItems.length > 0) {
     titleRow = rowEls.find(
       (el) => !isTyreFeatureItem(el)
+        && !isProductSizeElement(el)
         && !el.querySelector('[data-aue-model="tyre-feature-item"]')
+        && !el.querySelector('[data-aue-model="product-size"]')
         && el.textContent?.trim(),
     ) ?? null;
     featureSource = explicitItems.map((row) => ({ row, instrumentFrom: row }));
   } else {
     const [firstRow] = rowEls;
     let start = 0;
-    if (firstRow && !rowHasMedia(firstRow)) {
+    if (firstRow && !rowHasMedia(firstRow) && !isProductSizeElement(firstRow)) {
       titleRow = firstRow;
       start = 1;
     }
@@ -370,4 +380,5 @@ export default function decorate(block) {
   });
 
   block.append(root);
+  await mountProductSizes(root, sizeSources, 'tyre-feature-sizes');
 }

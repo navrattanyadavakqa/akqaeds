@@ -59,7 +59,8 @@
   {
     "id": "tyre-feature",
     "components": [
-      "tyre-feature-item"
+      "tyre-feature-item",
+      "product-size"
     ]
   }
 ]

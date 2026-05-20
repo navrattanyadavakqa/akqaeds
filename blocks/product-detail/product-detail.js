@@ -1,52 +1,15 @@
-import {
-  createOptimizedPicture,
-  decorateBlock,
-  loadBlock,
-} from '../../scripts/aem.js';
+import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
+import {
+  collectProductSizeNodes,
+  mountProductSizes,
+} from '../../scripts/product-size-blocks.js';
 import {
   fetchPriceStock,
   formatAvailability,
 } from '../../scripts/product-price-stock.js';
 
 const PRODUCTS_API = 'https://257490-akqaeds-stage.adobeioruntime.net/api/v1/web/akqaeds/getProducts';
-
-/**
- * @param {Element} source
- * @returns {Element[]}
- */
-function collectProductSizeNodes(source) {
-  const byModel = [...source.querySelectorAll('[data-aue-model="product-size"]')];
-  if (byModel.length) {
-    return byModel.map((el) => el.closest('.product-size') ?? el);
-  }
-  return [...source.querySelectorAll('.product-size')];
-}
-
-/**
- * @param {Element} container
- * @param {Element[]} sizeSources
- */
-function appendProductSizes(container, sizeSources) {
-  if (!sizeSources.length) return;
-  const wrap = document.createElement('div');
-  wrap.className = 'product-detail-sizes';
-  sizeSources.forEach((sizeSource) => {
-    wrap.append(sizeSource.cloneNode(true));
-  });
-  container.append(wrap);
-}
-
-/**
- * @param {Element} container
- */
-async function initProductSizeBlocks(container) {
-  const blocks = [...container.querySelectorAll('.product-size')];
-  await Promise.all(blocks.map(async (sizeBlock) => {
-    decorateBlock(sizeBlock);
-    await loadBlock(sizeBlock);
-  }));
-}
 
 /**
  * Reads authored product id from block markup (first number in text, or ?id= from link).
@@ -114,13 +77,8 @@ function renderProductImage(src, alt) {
  */
 async function mountProductDetail(block, root, sizeSources) {
   const body = root.querySelector('.product-detail-card-body');
-  if (body) {
-    appendProductSizes(body, sizeSources);
-    await initProductSizeBlocks(body);
-  } else if (sizeSources.length) {
-    appendProductSizes(root, sizeSources);
-    await initProductSizeBlocks(root);
-  }
+  const container = body || root;
+  await mountProductSizes(container, sizeSources, 'product-detail-sizes');
   if (!root.parentElement) {
     block.append(root);
   }
