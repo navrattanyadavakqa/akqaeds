@@ -92,6 +92,13 @@
   color: var(--link-color, #b00020);
 }
 
+.product-detail .product-detail-sizes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
 .product-detail .product-detail-placeholder {
   color: var(--text-color-secondary, #666);
 }

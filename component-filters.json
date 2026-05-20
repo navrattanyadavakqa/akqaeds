@@ -18,7 +18,6 @@
       "fragment",
       "products",
       "product-detail",
-      "product-size",
       "product-list",
       "navigation",
       "tyre-feature"
@@ -43,6 +42,12 @@
       "image",
       "button",
       "title"
+    ]
+  },
+  {
+    "id": "product-detail",
+    "components": [
+      "product-size"
     ]
   },
   {

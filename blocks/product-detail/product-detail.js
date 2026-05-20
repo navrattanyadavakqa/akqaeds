@@ -1,4 +1,8 @@
-import { createOptimizedPicture } from '../../scripts/aem.js';
+import {
+  createOptimizedPicture,
+  decorateBlock,
+  loadBlock,
+} from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 import {
   fetchPriceStock,
@@ -8,12 +12,57 @@ import {
 const PRODUCTS_API = 'https://257490-akqaeds-stage.adobeioruntime.net/api/v1/web/akqaeds/getProducts';
 
 /**
+ * @param {Element} source
+ * @returns {Element[]}
+ */
+function collectProductSizeNodes(source) {
+  const byModel = [...source.querySelectorAll('[data-aue-model="product-size"]')];
+  if (byModel.length) {
+    return byModel.map((el) => el.closest('.product-size') ?? el);
+  }
+  return [...source.querySelectorAll('.product-size')];
+}
+
+/**
+ * @param {Element} container
+ * @param {Element[]} sizeSources
+ */
+function appendProductSizes(container, sizeSources) {
+  if (!sizeSources.length) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'product-detail-sizes';
+  sizeSources.forEach((sizeSource) => {
+    wrap.append(sizeSource.cloneNode(true));
+  });
+  container.append(wrap);
+}
+
+/**
+ * @param {Element} container
+ */
+async function initProductSizeBlocks(container) {
+  const blocks = [...container.querySelectorAll('.product-size')];
+  await Promise.all(blocks.map(async (sizeBlock) => {
+    decorateBlock(sizeBlock);
+    await loadBlock(sizeBlock);
+  }));
+}
+
+/**
  * Reads authored product id from block markup (first number in text, or ?id= from link).
  * @param {Element} block
  * @returns {string}
  */
 function readProductId(block) {
-  const link = block.querySelector('a[href*="getProducts"]');
+  const field = block.querySelector('[data-aue-prop="productId"]');
+  if (field) {
+    const raw = field.textContent.trim();
+    const digits = raw.match(/\d+/)?.[0];
+    return digits || raw;
+  }
+  const scoped = block.cloneNode(true);
+  scoped.querySelectorAll('.product-size, [data-aue-model="product-size"]').forEach((n) => n.remove());
+  const link = scoped.querySelector('a[href*="getProducts"]');
   if (link) {
     try {
       const u = new URL(link.href);
@@ -23,7 +72,7 @@ function readProductId(block) {
       // ignore
     }
   }
-  const raw = (block.querySelector('p')?.textContent || block.textContent || '').trim();
+  const raw = (scoped.querySelector('p')?.textContent || scoped.textContent || '').trim();
   const digits = raw.match(/\d+/)?.[0];
   return digits || raw;
 }
@@ -58,8 +107,28 @@ function renderProductImage(src, alt) {
   return createOptimizedPicture(src, alt || '', false, [{ width: '750' }]);
 }
 
+/**
+ * @param {Element} block
+ * @param {Element} root
+ * @param {Element[]} sizeSources
+ */
+async function mountProductDetail(block, root, sizeSources) {
+  const body = root.querySelector('.product-detail-card-body');
+  if (body) {
+    appendProductSizes(body, sizeSources);
+    await initProductSizeBlocks(body);
+  } else if (sizeSources.length) {
+    appendProductSizes(root, sizeSources);
+    await initProductSizeBlocks(root);
+  }
+  if (!root.parentElement) {
+    block.append(root);
+  }
+}
+
 export default async function decorate(block) {
   const source = block.cloneNode(true);
+  const sizeSources = collectProductSizeNodes(source);
   const productId = readProductId(source);
   block.innerHTML = '';
 
@@ -72,7 +141,7 @@ export default async function decorate(block) {
     hint.className = 'product-detail-placeholder';
     hint.textContent = 'Add a product ID.';
     root.append(hint);
-    block.append(root);
+    await mountProductDetail(block, root, sizeSources);
     return;
   }
 
@@ -96,6 +165,7 @@ export default async function decorate(block) {
     err.className = 'product-detail-error';
     err.textContent = 'Network error. Could not load product.';
     root.append(err);
+    await mountProductDetail(block, root, sizeSources);
     return;
   }
 
@@ -105,6 +175,7 @@ export default async function decorate(block) {
     err.className = 'product-detail-error';
     err.textContent = 'Could not load product.';
     root.append(err);
+    await mountProductDetail(block, root, sizeSources);
     return;
   }
 
@@ -117,6 +188,7 @@ export default async function decorate(block) {
     err.className = 'product-detail-error';
     err.textContent = 'Invalid response from server.';
     root.append(err);
+    await mountProductDetail(block, root, sizeSources);
     return;
   }
 
@@ -126,6 +198,7 @@ export default async function decorate(block) {
     err.className = 'product-detail-error';
     err.textContent = 'Product not found.';
     root.append(err);
+    await mountProductDetail(block, root, sizeSources);
     return;
   }
 
@@ -182,4 +255,5 @@ export default async function decorate(block) {
 
   if (media.firstChild) root.append(media);
   root.append(body);
+  await mountProductDetail(block, root, sizeSources);
 }
