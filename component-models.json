@@ -281,6 +281,23 @@
     ]
   },
   {
+    "id": "product-size",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "size",
+        "label": "Size",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
     "id": "product",
     "fields": [
       {

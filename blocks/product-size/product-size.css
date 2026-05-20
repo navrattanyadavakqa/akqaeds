@@ -1,0 +1,22 @@
+.product-size {
+  margin: 1rem 0;
+}
+
+.product-size .product-size-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.product-size .product-size-title {
+  margin: 0;
+  font-size: var(--body-font-size-s, 0.875rem);
+  font-weight: 600;
+  color: var(--text-color, inherit);
+}
+
+.product-size .product-size-value {
+  margin: 0;
+  font-size: var(--body-font-size-m, 1rem);
+  color: var(--text-color, inherit);
+}
