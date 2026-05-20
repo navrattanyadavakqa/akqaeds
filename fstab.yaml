@@ -1,5 +1,5 @@
 mountpoints:
   /:
-    url: "https://author-p104103-e1884364.adobeaemcloud.com/bin/franklin.delivery/navrattanyadavakqa/akqaeds/main"
+    url: "https://localhost:8443/bin/franklin.delivery/navrattanyadavakqa/akqaeds/main"
     type: "markup"
     suffix: ".html"
